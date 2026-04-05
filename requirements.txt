@@ -1,4 +1,8 @@
 jupyter
 ipykernel
-qdrant-client
-ollama
+llama-index
+llama-index-vector-stores-qdrant
+llama-index-embeddings-ollama
+llama-index-llms-ollama
+llama-index-readers-docling
+python-dotenv
