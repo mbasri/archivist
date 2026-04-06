@@ -1,9 +1,19 @@
+# MacOS files
+.DS_Store
+
+# Log files
+*.log
+
+# Environment variables
+.env
+
+# Python
 .venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-outputs.d/
-.env
+
+# Generated data
+extracted/
 index.json
 extract_index.json
-extracted/

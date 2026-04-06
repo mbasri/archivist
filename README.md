@@ -4,122 +4,79 @@
 
 **Turn your NAS into a knowledge base you can chat with.**
 
-Archivist is a self-hosted RAG pipeline that indexes any file from your NAS — PDF, Office documents, images, audio, video — into a vector database, and lets you chat with your data through a local or cloud LLM.
+100% self-hosted RAG pipeline. Indexes files from any directory into Qdrant, then lets you query them through a local LLM via Jupyter notebooks.
 
 ---
 
 ## How it works
 
 ```
-NAS (any format)
+NAS (PDF, Office, text...)
       │
-      ▼
- Conversion → text          Docling (docs, images) · Whisper (audio, video)
+      ▼  01-extract.ipynb
+ MarkItDown → extracted/*.md
       │
-      ▼
- Chunking + Embedding       local (Ollama) or cloud (OpenAI, AWS Bedrock)
+      ▼  02-indexing.ipynb
+ Chunk + Embed (Ollama) → Qdrant
       │
-      ▼
- Vector database            Qdrant
-      │
-      ▼
- Chatbot                    Open WebUI
+      ▼  03-chat.ipynb
+ Chat with your documents
 ```
 
 ---
 
 ## Stack
 
-| Component       | Technology                          |
-|-----------------|-------------------------------------|
-| File conversion | [Docling](https://github.com/DS4SD/docling) |
-| Transcription   | [Whisper](https://github.com/openai/whisper) |
-| Vector database | [Qdrant](https://qdrant.tech)       |
-| Embeddings      | [Ollama](https://ollama.com) · OpenAI · AWS Bedrock |
-| LLM             | [Ollama](https://ollama.com) · OpenAI · AWS Bedrock |
-| Chatbot UI      | [Open WebUI](https://openwebui.com) |
-| Indexing        | Jupyter notebooks (Python)          |
-
----
-
-## Project structure
-
-```
-archivist/
-├── docker-compose.yml          # Qdrant (vector database) + Ollama (embeddings + LLM)
-├── notebooks/
-│   └── indexing.ipynb          # Full pipeline: scan → chunk → embed → index into Qdrant
-├── index.json                  # Tracks indexed files by hash (auto-generated)
-└── README.md
-```
+| | |
+|---|---|
+| Extraction | [MarkItDown](https://github.com/microsoft/markitdown) |
+| Embeddings + LLM | [Ollama](https://ollama.com) |
+| Vector database | [Qdrant](https://qdrant.tech) |
+| Orchestration | [LlamaIndex](https://docs.llamaindex.ai) |
 
 ---
 
 ## Getting started
 
-### Prerequisites
-
-- Docker and Docker Compose
-- Python 3.12+ and Jupyter
-
-### 1. Start the stack
+**Prerequisites:** Docker, Python 3.12+, Jupyter
 
 ```bash
+# 1. Start Qdrant + Ollama
 docker compose up -d
 
-# Pull the embedding model (once)
+# 2. Pull models (once)
 docker exec archivist-ollama ollama pull nomic-embed-text
-```
+docker exec archivist-ollama ollama pull llama3.2:1b
 
-Qdrant dashboard available at `http://localhost:6333/dashboard`.
+# 3. Configure
+cp .env.example .env
+# edit .env → set NAS_PATH
 
-### 3. Run the indexing pipeline
-
-```bash
+# 4. Run notebooks in order
 jupyter notebook notebooks/
 ```
 
-Open `indexing.ipynb` and run all cells.
-
-> The notebook creates its own venv and installs dependencies automatically on first run.
+Qdrant dashboard: `http://localhost:6333/dashboard`
 
 ---
 
 ## Configuration
 
-All settings are set in the **Setup Variables** cell at the top of each notebook — no config file needed.
+Copy `.env.example` to `.env` and set `NAS_PATH`. Everything else has sensible defaults.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `nas_path` | Path to the directory to index | `` |
-| `embeddings_model` | Ollama embedding model | `nomic-embed-text` |
-| `qdrant_host` | Qdrant host | `localhost` |
-| `qdrant_port` | Qdrant port | `6333` |
-| `ollama_host` | Ollama host | `localhost` |
-| `ollama_port` | Ollama port | `11434` |
-
----
-
-## Supported file formats
-
-| Category  | Extensions |
-|-----------|-----------|
-| Documents | `.pdf` `.txt` `.md` `.docx` `.pptx` `.xlsx` `.odt` `.odp` `.ods` `.csv` |
-| Images    | `.jpg` `.jpeg` `.png` `.gif` `.bmp` `.tiff` `.webp` `.svg` |
-| Audio     | `.mp3` `.wav` `.flac` `.m4a` `.ogg` `.aac` |
-| Video     | `.mp4` `.mkv` `.avi` `.mov` `.webm` `.flv` |
+| Variable | Default | Description |
+|---|---|---|
+| `NAS_PATH` | — | Directory to scan |
+| `EMBEDDING_MODEL` | `nomic-embed-text` | Ollama embedding model |
+| `LLM_MODEL` | `llama3.2:1b` | Ollama LLM |
+| `CHUNK_SIZE` | `512` | Tokens per chunk |
+| `COLLECTION_NAME` | `archivist` | Qdrant collection |
 
 ---
 
-## Roadmap
+## Supported formats
 
-- [x] Scan NAS and list files by category
-- [x] Incremental indexing — skip already indexed files (hash-based)
-- [x] Chunk, embed and index plain text files (`.txt`, `.md`, `.csv`)
-- [x] Docker Compose (Qdrant + Ollama)
-- [ ] Convert documents to text (Docling) — PDF, PPTX, DOCX, images
-- [ ] Transcribe audio and video (Whisper)
-- [ ] Open WebUI integration
+`.pdf` `.docx` `.pptx` `.xlsx` `.csv` `.txt` `.md` `.html` `.epub` `.xml` `.json`
 
 ---
 
@@ -129,4 +86,4 @@ All settings are set in the **Setup Variables** cell at the top of each notebook
 
 ## License
 
-This is free and unencumbered software released into the public domain - see the [LICENSE](./LICENSE) file for details.
+This is free and unencumbered software released into the public domain — see [LICENSE](./LICENSE).
