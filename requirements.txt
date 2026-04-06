@@ -7,3 +7,4 @@ llama-index-embeddings-ollama
 llama-index-llms-ollama
 python-dotenv
 docx2txt
+markitdown[all]
