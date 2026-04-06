@@ -5,5 +5,5 @@ __pycache__/
 outputs.d/
 .env
 index.json
-extract_index
+extract_index.json
 extracted/
